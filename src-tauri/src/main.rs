@@ -9,25 +9,29 @@ fn main() {
     let tray_menu = SystemTrayMenu::new().add_item(quit);
     let tray = SystemTray::new().with_menu(tray_menu);
 
-    tauri::Builder::default()
-    .setup(|app| {
-      app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-      Ok(())
-    })
+    let app = tauri::Builder::default()
+        .setup(|app| {
+            // Only set activation policy on macOS
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            
+            Ok(())
+        })
         .system_tray(tray)
         .on_system_tray_event(|_app, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => {
                 match id.as_str() {
-                  "quit" => {
-                    std::process::exit(0);
-                  }
-                  _ => {}
+                    "quit" => {
+                        std::process::exit(0);
+                    }
+                    _ => {}
                 }
-              }
-              _ => {}
+            }
+            _ => {}
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application")
+        .run(tauri::generate_context!());
 
-
+    if let Err(e) = app {
+        eprintln!("Error while running tauri application: {}", e);
+    }
 }
