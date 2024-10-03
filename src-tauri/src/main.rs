@@ -10,8 +10,10 @@ fn main() {
     let tray = SystemTray::new().with_menu(tray_menu);
 
     tauri::Builder::default()
-    .setup(|app| 
-        Ok(app.set_activation_policy(tauri::ActivationPolicy::Accessory)))
+    .setup(|app| {
+      app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+      Ok(())
+    })
         .system_tray(tray)
         .on_system_tray_event(|_app, event| match event {
             SystemTrayEvent::MenuItemClick { id, .. } => {
