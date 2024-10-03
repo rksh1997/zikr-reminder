@@ -4,9 +4,13 @@ import {
   requestPermission,
   sendNotification,
 } from "@tauri-apps/api/notification";
+import { listen } from "@tauri-apps/api/event";
 import notifications from "./notifications";
 
+const ONE_MINUTE = 60 * 1000;
+
 const NotificationButton = () => {
+  const [intervalTime, setIntervalTime] = useState(5 * ONE_MINUTE);
   const [permissionGranted, setPermissionGranted] = useState(false);
 
   const init = async () => {
@@ -30,13 +34,28 @@ const NotificationButton = () => {
     if (!permissionGranted) {
       init();
     } else {
+      showNotification();
+
       const t = setInterval(() => {
         showNotification();
-      }, 5 * 60 * 1000);
+      }, intervalTime);
 
       return () => clearInterval(t);
     }
-  }, [permissionGranted]);
+  }, [permissionGranted, intervalTime]);
+
+  React.useEffect(() => {
+    const unlisten = listen("interval_changed", (event) => {
+      const newIntervalTimeMins = Number(event.payload);
+      if (!Number.isNaN(newIntervalTimeMins)) {
+        setIntervalTime(newIntervalTimeMins * ONE_MINUTE);
+      }
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   return null;
 };

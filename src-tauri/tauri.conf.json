@@ -28,6 +28,7 @@
     },
     "windows": [
       {
+        "label": "main",
         "title": "zikr-reminder",
         "visible": false,
         "fullscreen": false
