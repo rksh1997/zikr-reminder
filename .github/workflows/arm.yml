@@ -23,9 +23,10 @@ jobs:
           commands: |
             export HOME=/root
             export CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse
-            apt update -y --allow-releaseinfo-change
-            apt upgrade -y
-            apt autoremove -y
+            apt-get update -y --allow-releaseinfo-change
+            apt-get upgrade -y
+            apt-get autoremove -y
+            apt-get clean -y
             # install Tauri dependencies
             xargs apt install -y < environment/apt_packages.txt
             # install rust and cargo
