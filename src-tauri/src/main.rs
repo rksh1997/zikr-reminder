@@ -5,6 +5,7 @@ use tauri::{
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayHandle, SystemTrayMenu,
     SystemTrayMenuItem,
 };
+use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 
 fn disable_menu_item_and_enable_others(tray_handle: &SystemTrayHandle, id: &str) {
     let ids = ["5_min", "15_min", "30_min", "60_min"];
@@ -31,15 +32,31 @@ fn main() {
         ))
         .add_item(CustomMenuItem::new("60_min".to_string(), "Every hour"))
         .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new(
+            "toggle_autolaunch".to_string(),
+            "Enable autostart",
+        ))
+        .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit".to_string(), "Quit"));
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .setup(|app| {
             // Only set activation policy on macOS
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            if app.autolaunch().is_enabled().unwrap() {
+                let _ = app
+                    .tray_handle()
+                    .get_item("toggle_autolaunch")
+                    .set_title("Disable autostart");
+            }
 
             let window = app.get_window("main").unwrap();
             window.hide().unwrap();
@@ -67,6 +84,22 @@ fn main() {
                 "60_min" => {
                     let _ = app.emit_all("interval_changed", 60);
                     disable_menu_item_and_enable_others(&app.tray_handle(), "60_min");
+                }
+                "toggle_autolaunch" => {
+                    let is_enabled = app.autolaunch().is_enabled().unwrap();
+                    if is_enabled {
+                        let _ = app
+                            .tray_handle()
+                            .get_item("toggle_autolaunch")
+                            .set_title("Enable autostart");
+                        let _ = app.autolaunch().disable();
+                    } else {
+                        let _ = app
+                            .tray_handle()
+                            .get_item("toggle_autolaunch")
+                            .set_title("Disable autostart");
+                        let _ = app.autolaunch().enable();
+                    }
                 }
                 _ => {}
             },

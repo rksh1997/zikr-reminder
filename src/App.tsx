@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { listen } from "@tauri-apps/api/event";
+import { enable, isEnabled } from "tauri-plugin-autostart-api";
 import {
   isPermissionGranted,
   requestPermission,
   sendNotification,
 } from "@tauri-apps/api/notification";
-import { listen } from "@tauri-apps/api/event";
+
 import notifications from "./notifications";
 
 const ONE_MINUTE = 60 * 1000;
@@ -21,12 +23,35 @@ const NotificationButton = () => {
     } else {
       setPermissionGranted(isGranted);
     }
+
+    if (!(await isEnabled())) {
+      await enable();
+    }
   };
 
   const showNotification = () => {
+    const notification =
+      notifications[Math.floor(Math.random() * notifications.length)];
+
+    let title;
+    switch (notification.category) {
+      case "duaa":
+        title = "ادع الله";
+        break;
+      case "tazkeer":
+        title = "تذكر قدواتك";
+        break;
+      case "tajdeed":
+        title = "جدد إيمانك";
+        break;
+      default:
+        title = "اذكر الله";
+        break;
+    }
+
     sendNotification({
-      title: "اذكر الله",
-      body: notifications[Math.floor(Math.random() * notifications.length)],
+      title: title,
+      body: notification.text,
     });
   };
 
@@ -45,7 +70,7 @@ const NotificationButton = () => {
   }, [permissionGranted, intervalTime]);
 
   React.useEffect(() => {
-    const unlisten = listen("interval_changed", (event) => {
+    const unlistenInterval = listen("interval_changed", (event) => {
       const newIntervalTimeMins = Number(event.payload);
       if (!Number.isNaN(newIntervalTimeMins)) {
         setIntervalTime(newIntervalTimeMins * ONE_MINUTE);
@@ -53,7 +78,7 @@ const NotificationButton = () => {
     });
 
     return () => {
-      unlisten.then((fn) => fn());
+      unlistenInterval.then((fn) => fn());
     };
   }, []);
 

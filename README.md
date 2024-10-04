@@ -1,7 +1,14 @@
-# Tauri + React + Typescript
+# Zikr reminder
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+Always do Zikr :D
 
-## Recommended IDE Setup
+## Download
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+Go to [releases](https://github.com/rksh1997/zikr-reminder/releases) and choose the proper bundle for you operating system.
+
+Supported operating systems:
+
+- Windows
+- Linux
+- MacOS Apple Silicon (M1, M2, M3)
+- MacOS Intel
