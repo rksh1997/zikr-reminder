@@ -1,6 +1,6 @@
 # Zikr reminder
 
-Always do Zikr :D
+Always do Zikr
 
 ## Download
 
